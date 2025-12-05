@@ -36,15 +36,35 @@ jobs:
           DAYS: ${{ steps.calc.outputs.days }}
           LEFT: ${{ steps.calc.outputs.left }}
         run: |
-          # 这里的 "提醒" 两个字必须有，因为你在飞书里设了关键词
-          MSG="🚨 **【Google Play 测试打卡提醒】** 🚨\n\n今天是测试第 **$DAYS** 天，距离胜利还有 **$LEFT** 天！\n\n请各位大佬务必：\n1. 打开 App\n2. 联网停留 2-3 分钟\n3. 随便点两下\n\n感激不尽！🙏"
-          
-          curl -X POST -H "Content-Type: application/json" \
-          -d "{
-            \"msg_type\": \"text\",
-            \"content\": {
-              \"text\": \"$MSG\"
+          # 改用交互卡片 + markdown，确保粗体生效，且包含关键词“提醒”
+          cat <<EOF > payload.json
+          {
+            "msg_type": "interactive",
+            "card": {
+              "config": {
+                "wide_screen_mode": true
+              },
+              "header": {
+                "title": {
+                  "tag": "plain_text",
+                  "content": "🚨 Google Play 测试打卡提醒 🚨"
+                }
+              },
+              "elements": [
+                {
+                  "tag": "markdown",
+                  "content": "今天是测试第 **$DAYS** 天，距离胜利还有 **$LEFT** 天！"
+                },
+                {
+                  "tag": "markdown",
+                  "content": "请各位大佬务必：\n1. 打开 App\n2. 联网停留 2-3 分钟\n3. 随便点两下\n\n感激不尽！ 🙏\n\n（提醒）"
+                }
+              ]
             }
-          }" \
-          ${{ secrets.FEISHU_WEBHOOK }}
+          }
+          EOF
+
+          curl -X POST -H "Content-Type: application/json" \
+            -d "@payload.json" \
+            ${{ secrets.FEISHU_WEBHOOK }}
 

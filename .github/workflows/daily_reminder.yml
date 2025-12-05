@@ -1,0 +1,50 @@
+name: 每日测试打卡提醒
+on:
+  # 1. 定时触发：每天北京时间上午 10:00 (UTC 02:00)
+  schedule:
+    - cron: '0 2 * * *'
+  # 2. 手动触发：方便你测试好不好用
+  workflow_dispatch:
+
+jobs:
+  send-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 计算测试天数
+        id: calc
+        run: |
+          # === 请修改这里：测试开始的日期 (格式 YYYY-MM-DD) ===
+          START_DATE="2025-12-05"
+          # ===============================================
+          
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          start_ts=$(date -d "$START_DATE" +%s)
+          current_ts=$(date -d "$CURRENT_DATE" +%s)
+          
+          # 计算天数差 (+1 是因为第一天也算一天)
+          diff_days=$(( (current_ts - start_ts) / 86400 + 1 ))
+          
+          # 计算剩余天数 (目标 14 天)
+          left_days=$(( 14 - diff_days ))
+          if [ $left_days -lt 0 ]; then left_days=0; fi
+          
+          echo "days=$diff_days" >> $GITHUB_OUTPUT
+          echo "left=$left_days" >> $GITHUB_OUTPUT
+
+      - name: 发送飞书消息
+        env:
+          DAYS: ${{ steps.calc.outputs.days }}
+          LEFT: ${{ steps.calc.outputs.left }}
+        run: |
+          # 这里的 "提醒" 两个字必须有，因为你在飞书里设了关键词
+          MSG="🚨 **【Google Play 测试打卡提醒】** 🚨\n\n今天是测试第 **$DAYS** 天，距离胜利还有 **$LEFT** 天！\n\n请各位大佬务必：\n1. 打开 App\n2. 联网停留 2-3 分钟\n3. 随便点两下\n\n感激不尽！🙏"
+          
+          curl -X POST -H "Content-Type: application/json" \
+          -d "{
+            \"msg_type\": \"text\",
+            \"content\": {
+              \"text\": \"$MSG\"
+            }
+          }" \
+          ${{ secrets.FEISHU_WEBHOOK }}
+

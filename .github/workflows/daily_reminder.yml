@@ -1,8 +1,8 @@
 name: 每日测试打卡提醒
 on:
-  # 1. 定时触发：每天北京时间上午 10:00 (UTC 02:00)
+  # 1. 定时触发：每天北京时间 18:20 (UTC 10:20)
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '20 10 * * *'
   # 2. 手动触发：方便你测试好不好用
   workflow_dispatch:
 
@@ -57,7 +57,7 @@ jobs:
                 },
                 {
                   "tag": "markdown",
-                  "content": "请各位大佬务必：\n1. 打开 App\n2. 联网停留 2-3 分钟\n3. 随便点两下\n4. 打开链接，填写打卡结果：\nhttps://ver133tlfd.feishu.cn/wiki/BAzWwVQcriPnaskup7VchRkwnfc\n\n感激不尽！ 🙏"
+                  "content": "请各位大佬务必：\n1. 打开 App\n2. 随便点两下\n3. 联网停留 2-3 分钟\n4. 打开链接，填写打卡结果：\nhttps://ver133tlfd.feishu.cn/wiki/BAzWwVQcriPnaskup7VchRkwnfc\n\n感激不尽！ 🙏"
                 }
               ]
             }
